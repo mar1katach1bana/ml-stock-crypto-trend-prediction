@@ -1,0 +1,40 @@
+# Stock Data Sources
+stock_data:
+  yahoo_finance:
+    symbols:
+      - "AAPL"  # Apple
+      - "GOOGL" # Google
+      - "MSFT"  # Microsoft
+      - "AMZN"  # Amazon
+      - "META"  # Meta (Facebook)
+      - "NVDA"  # NVIDIA
+      - "TSLA"  # Tesla
+    interval: "1d"  # Options: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo
+    start_date: "2010-01-01"
+    end_date: "now"
+    adjust_prices: true
+
+# Cryptocurrency Data Sources
+crypto_data:
+  binance:
+    api_key: "${BINANCE_API_KEY}"
+    api_secret: "${BINANCE_API_SECRET}"
+    symbols:
+      - "BTC/USDT"
+      - "ETH/USDT"
+      - "BNB/USDT"
+      - "ADA/USDT"
+      - "SOL/USDT"
+    interval: "1h"  # Options: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
+    start_date: "2017-01-01"
+    end_date: "now"
+    limit: 1000
+
+# Data Storage
+storage:
+  local:
+    raw_data: "data/raw"
+    processed_data: "data/processed"
+    external_data: "data/external"
+    format: "parquet"
+    compression: "snappy"

@@ -1,0 +1,132 @@
+# Data Processing
+data_processing:
+  sequence_length: 60  # Number of time steps for sequence models
+  prediction_horizon: 5  # Number of steps to predict ahead
+  train_test_split: 0.8
+  validation_split: 0.1
+  features:
+    price: ["open", "high", "low", "close", "volume"]
+    technical_indicators:
+      - name: "RSI"
+        parameters: {"window": 14}
+      - name: "MACD"
+        parameters: {"fast": 12, "slow": 26, "signal": 9}
+      - name: "BB"
+        parameters: {"window": 20, "std": 2}
+      - name: "EMA"
+        parameters: {"windows": [9, 21, 50, 200]}
+    derived_features:
+      - "returns"
+      - "log_returns"
+      - "volatility"
+  scaling:
+    method: "min_max"  # Options: min_max, standard, robust
+    feature_range: [-1, 1]
+
+# LSTM Model
+lstm_model:
+  architecture:
+    input_shape: [60, 32]  # [sequence_length, n_features]
+    layers:
+      - type: "LSTM"
+        units: 128
+        return_sequences: true
+        dropout: 0.2
+      - type: "LSTM"
+        units: 64
+        return_sequences: false
+        dropout: 0.2
+      - type: "Dense"
+        units: 32
+        activation: "relu"
+      - type: "Dense"
+        units: 1
+        activation: "linear"
+  training:
+    batch_size: 32
+    epochs: 100
+    optimizer:
+      name: "adam"
+      learning_rate: 0.001
+    early_stopping:
+      monitor: "val_loss"
+      patience: 10
+      restore_best_weights: true
+    callbacks:
+      - "ModelCheckpoint"
+      - "ReduceLROnPlateau"
+      - "TensorBoard"
+
+# Random Forest Model
+random_forest:
+  n_estimators: 1000
+  max_depth: 20
+  min_samples_split: 5
+  min_samples_leaf: 2
+  max_features: "sqrt"
+  bootstrap: true
+  n_jobs: -1
+  class_weight: "balanced"
+  random_state: 42
+
+# XGBoost Model
+xgboost:
+  objective: "reg:squarederror"
+  max_depth: 6
+  learning_rate: 0.01
+  n_estimators: 1000
+  min_child_weight: 1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  gamma: 0
+  reg_alpha: 0
+  reg_lambda: 1
+  random_state: 42
+  n_jobs: -1
+
+# Ensemble Model
+ensemble:
+  models: ["lstm", "random_forest", "xgboost"]
+  weights: [0.4, 0.3, 0.3]
+  voting: "soft"  # Options: hard, soft
+  threshold: 0.5
+
+# Model Evaluation
+evaluation:
+  metrics:
+    classification:
+      - "accuracy"
+      - "precision"
+      - "recall"
+      - "f1"
+      - "roc_auc"
+    regression:
+      - "rmse"
+      - "mae"
+      - "mape"
+      - "r2"
+  cross_validation:
+    n_splits: 5
+    shuffle: true
+    purge_overlap: 60  # Days to purge between train/test to prevent leakage
+
+# Hyperparameter Tuning
+hyperparameter_tuning:
+  method: "bayesian"  # Options: grid, random, bayesian
+  n_trials: 100
+  cv_splits: 5
+  metric: "val_loss"
+  direction: "minimize"
+  timeout: 72000  # 20 hours
+  n_jobs: -1
+
+# Backtesting
+backtesting:
+  initial_capital: 100000
+  position_size: 0.1  # 10% of capital per trade
+  stop_loss: 0.02    # 2% stop loss
+  take_profit: 0.04  # 4% take profit
+  max_positions: 5
+  commission: 0.001  # 0.1% commission per trade
+  slippage: 0.001   # 0.1% slippage assumption
+  risk_free_rate: 0.02  # For Sharpe ratio calculation
